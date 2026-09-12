@@ -1,10 +1,10 @@
 # Changelog
 
-## 0.1.0 — En préparation
+## 0.1.0 — In preparation
 
-- Implémentation de la POC Slack Modulo : événements des canaux publics internes, analyse FR/EN, réactions et fiches éducatives.
-- Statistiques publiques, commande `/modulo`, rapports mensuels et médailles à partir de 20 messages analysés.
-- Rapports et retours de commande en anglais par défaut ; commandes courtes `/modulo u [@personne] [AAAA-MM]` et `/modulo c [#canal] [AAAA-MM]`, avec conservation des anciens alias.
-- SQLite, borne d’activation persistante, file de traitement, prévention des doublons et conservation des textes pendant 30 jours.
-- Tests déterministes et jeu initial de 18 exemples fictifs pour évaluer la classification.
-- Fiches éducatives statiques déployées sur Vercel à `https://modulo.contre-vent.ca`, avec sous-domaine Cloudflare.
+- Implemented the Modulo Slack POC: internal public channel events, French and English analysis, reactions, and educational pages.
+- Public statistics, the `/modulo` command, monthly reports, and medals for at least 20 analyzed messages.
+- Reports and command feedback default to English; short commands `/modulo u [@person] [YYYY-MM]` and `/modulo c [#channel] [YYYY-MM]`, with older aliases preserved.
+- SQLite, persistent activation boundaries, a processing queue, duplicate prevention, and 30-day text retention.
+- Deterministic tests and an initial set of 18 fictional examples for evaluating classification.
+- Static educational pages deployed on Vercel at `https://modulo.contre-vent.ca`, with a subdomain configured through Cloudflare.
