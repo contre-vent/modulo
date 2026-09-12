@@ -1,0 +1,20 @@
+{
+  "display_information": {
+    "name": "Modulo",
+    "description": "Sensibilisation aux communications respectueuses et statistiques FR/EN",
+    "background_color": "#28384d"
+  },
+  "features": {
+    "bot_user": { "display_name": "Modulo", "always_online": false },
+    "slash_commands": [{ "command": "/modulo", "description": "Statistiques publiques des messages observés", "usage_hint": "canaux | canal #canal | utilisateurs | utilisateur @personne [AAAA-MM]", "should_escape": true }]
+  },
+  "oauth_config": {
+    "scopes": { "bot": ["channels:history", "channels:read", "channels:join", "chat:write", "reactions:write", "users:read", "commands"] }
+  },
+  "settings": {
+    "event_subscriptions": { "bot_events": ["message.channels", "channel_created", "channel_archive", "channel_unarchive", "channel_rename", "channel_shared", "channel_unshared", "member_left_channel"] },
+    "socket_mode_enabled": true,
+    "org_deploy_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

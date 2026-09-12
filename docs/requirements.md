@@ -1,7 +1,7 @@
 # Requis — Modulo, POC Slack
 
 Date : 2026-09-12. Source : décisions prises avec le propriétaire dans la conversation de cadrage.
-Statut : périmètre fonctionnel validé ; paramètres ouverts listés en fin de document. Aucune implémentation ni activation Slack réalisée par cette documentation.
+Statut : POC implémentée ; décisions du démarrage incorporées ci-dessous. L’état de validation et de mise en route figure dans [le suivi d’implémentation](implementation-plan.md).
 
 ## 1. Objectif et vocabulaire
 
@@ -71,7 +71,7 @@ La flatterie excessive envers un supérieur n’est pas, en soi, une catégorie 
 
 - « Je suis découragé », un refus respectueux ou une critique factuelle ne sont pas négatifs au sens de la modération par défaut.
 - « Merci, enfin quelque chose d’intelligent » ne doit pas recevoir une classification positive sur la seule présence de « merci ».
-- Les états **mixte** et **indéterminé** ont été proposés. Leur traitement statistique précis n’est pas validé. L’orientation est de laisser les indéterminés sans annotation et de les compter séparément.
+- Un message mêlant du positif et du négatif compte comme **négatif**. Les **indéterminés** restent sans annotation et sont comptés séparément, hors du score.
 - Une panne d’analyse n’équivaut pas à un message neutre.
 - Les exemples ci-dessus servent au cadrage et au futur jeu d’évaluation ; aucune précision du modèle n’est encore mesurée.
 
@@ -97,33 +97,38 @@ Contraintes de plateforme vérifiées pendant le cadrage : les réactions et ré
 | ACCESS-01 | Toutes les statistiques individuelles et collectives sont publiques dans la communauté Slack authentifiée. | Un membre authentifié peut consulter les résultats, positifs et négatifs, d’une autre personne ou d’un autre canal suivi ; aucun rôle RH n’est requis. |
 | ACCESS-02 | « Public » signifie dans la communauté Slack, pas sur Internet. | Une demande non authentifiée ou extérieure à l’espace ne donne pas accès aux données statistiques. |
 
-L’admissibilité des messages mixtes, indéterminés, techniques, modifiés ou supprimés reste à définir. Les messages neutres doivent être inclus quelle que soit la décision retenue. Les indisponibilités d’analyse et les périodes non couvertes doivent rester distinguables des résultats neutres.
+Les messages humains textuels, y compris les réponses dans les fils, sont admissibles. Bots, messages système, messages avec fichiers et messages uniquement emoji sont exclus. Les modifications et suppressions par l’auteur ne changent pas le résultat initial ni les statistiques. Les indéterminés et échecs d’analyse sont hors du dénominateur ; ils apparaissent séparément. Les neutres sont inclus.
 
 ## 6. Rapports et médailles
 
 | ID | Exigence validée | Critère d’acceptation |
 | --- | --- | --- |
-| REPORT-01 | Le premier de chaque mois, produire un relevé des statistiques individuelles et des canaux pour le mois précédent. | Le rapport indique explicitement la période observée. L’heure et le fuseau sont à confirmer. |
+| REPORT-01 | Le premier de chaque mois à 9 h, produire un relevé des statistiques individuelles et des canaux pour le mois précédent. | Fuseau du compte Slack de l’installateur, repli America/Toronto ; le rapport indique explicitement période et fuseau. |
 | REPORT-02 | Publier dans #general un compte rendu de tous les canaux suivis et de tous les utilisateurs observés. | Le compte rendu donne accès aux statistiques individuelles et collectives, et pas seulement aux gagnants. Les détails peuvent être répartis si les limites Slack l’exigent. |
 | REPORT-03 | Décerner or, argent et bronze à trois canaux selon le score décroissant. | Hors égalités et cas de faible participation restant à décider, le score le plus élevé reçoit l’or. |
 | REPORT-04 | Décerner or, argent et bronze à trois personnes selon la même formule. | Hors cas ouverts, l’ordre des médailles correspond aux scores décroissants. |
 | REPORT-05 | Produire sur demande un rapport partiel pour tous les canaux, un canal, tous les utilisateurs ou un utilisateur. | Les quatre périmètres sont accessibles à un membre authentifié ; période et syntaxe restent à définir. |
 
-Le score d’un canal est envisagé à partir des volumes de ses messages ; celui d’une personne à partir de ses messages dans les canaux suivis. Aucun seuil minimum, départage des égalités ni pénalité supplémentaire liée à la gravité n’est actuellement arrêté.
+Le score d’un canal est calculé à partir des volumes de ses messages ; celui d’une personne à partir de ses messages dans les canaux suivis. Les médailles exigent **20 messages analysés** (positifs, négatifs ou neutres) dans la période. Les égalités sont départagées par volume analysé décroissant, puis identifiant Slack croissant. Avec moins de trois candidats admissibles, seuls les candidats admissibles reçoivent une médaille. Aucun score en l’absence de message analysé. Aucune pénalité supplémentaire liée à la gravité.
+
+Les rapports sont en français. `/modulo canaux`, `/modulo canal #canal`, `/modulo utilisateurs` et `/modulo utilisateur @personne` acceptent un mois optionnel `AAAA-MM` ; par défaut, le mois courant. La commande s’utilise dans un canal public suivi et le rapport y est publié. Un membre de l’espace peut consulter les statistiques d’un autre membre.
 
 ## 7. Orientation technique
 
 Architecture envisagée : événements Slack → réception → file de traitement → classification contextualisée → règles déterministes → persistance, réactions et rapports.
 
 - TypeScript et Slack Bolt pour l’intégration.
-- Base de données persistante ; PostgreSQL recommandé pendant le cadrage, choix final non arrêté.
-- Modèle multilingue avec sortie structurée ; fournisseur, modèle et niveau de réflexion d’inférence à choisir après évaluation.
+- SQLite dans un fichier, validé pour simplifier la POC locale ; PostgreSQL n’est pas requis.
+- API OpenAI avec sortie structurée ; modèle configurable, GPT-6 Astra avec réflexion low comme première base d’évaluation, distinct du modèle de développement.
 - Traitement asynchrone et ordonnanceur pour les rapports mensuels.
-- Pas de portail web dans le périmètre initial. L’hébergement des fiches éducatives reste nécessaire et à choisir.
+- Pas de portail web dans le périmètre initial. Les fiches bilingues peuvent être servies par l’application ou exportées en pages statiques ; elles sont publiées sur https://modulo.contre-vent.ca. Aucune statistique n’est exposée sur HTTP.
 - Pas d’AG-UI/CopilotKit dans la POC initiale : utiles éventuellement pour un futur portail, sans bénéfice établi pour l’interface Slack native.
 - Ambiguous.ai explicitement écarté pour l’instant.
 - GPT-6 Astra High a été recommandé pour le développement dans Codex ; cela ne sélectionne pas le modèle qui analysera les messages.
-- Slack CLI installé et connecté à contre-vent selon le propriétaire ; permissions et installation du bot à vérifier lors de la mise en place.
+- Slack CLI v4.7.0 vérifié, connecté à `contrevent-groupe` (`T0APQ2W08CX`). Application locale `A0C1JBDNW3E` installée avec manifeste validé.
+- Socket Mode, un processus local, contexte des 10 derniers messages observés dans le canal ou fil. Aucun historique antérieur à l’activation n’est téléchargé.
+- Conservation locale des textes et reformulations pendant 30 jours ; catégories et statistiques conservées pendant la POC. Cela ne supprime pas les messages déjà publiés dans Slack.
+- Réactions validées : cœur (`heart`) et cercle orange (`large_orange_circle`).
 
 ### Critères techniques proposés pour fiabiliser la réalisation
 
@@ -136,21 +141,21 @@ Architecture envisagée : événements Slack → réception → file de traiteme
 
 ## 8. Décisions encore ouvertes
 
-Ces points ne remettent pas en question le périmètre validé. Les confirmer avant d’implémenter le comportement correspondant.
+Les décisions confirmées au démarrage remplacent les questions correspondantes du cadrage. Les limites techniques ne sont pas des fonctionnalités supplémentaires promises.
 
 | ID | Décision à prendre |
 | --- | --- |
-| OPEN-01 | Traitement des messages mixtes et indéterminés dans le score et les rapports ; abstention et seuils de classification. |
-| OPEN-02 | Effet des modifications et suppressions par les auteurs sur les classifications, réactions et statistiques. Cela ne crée pas de procédure de révision utilisateur. |
-| OPEN-03 | Exclusion des bots tiers et messages système ; inclusion des réponses de fils ; traitement des fichiers, images et messages uniquement emoji. |
-| OPEN-04 | Volume minimum et jours actifs pour les médailles, égalités, moins de trois participants, aucun message admissible. |
-| OPEN-05 | Heure, fuseau et langue des rapports mensuels ; période par défaut et syntaxe des rapports sur demande. |
-| OPEN-06 | Fenêtre de contexte après activation, état nécessaire pour les comportements répétés, durée de conservation des textes et statistiques. |
-| OPEN-07 | Fournisseur/modèle, hébergement, base de données, mode de connexion Slack et budget de fonctionnement. |
-| OPEN-08 | Emojis exacts, emplacement et accès des fiches bilingues, langue pour les messages mixtes. |
-| OPEN-09 | Sort des canaux publics Slack Connect avec des participants externes, des canaux archivés ou devenant privés ; droits des invités pour les rapports. |
-| OPEN-10 | Mesures de qualité par catégorie et langue, seuil de réussite du pilote, délai acceptable d’intervention. |
-| OPEN-11 | Politique de reprise après panne, tout en respectant l’absence d’import d’historique antérieur à l’activation. |
+| OPEN-01 | Résolu : mixte négatif, indéterminé sans annotation et hors du score. Pas de seuil numérique de confiance autoproclamé par le modèle. |
+| OPEN-02 | Résolu : conserver le résultat initial après modification ou suppression. |
+| OPEN-03 | Résolu : texte humain et réponses ; exclure bots, système, fichiers et emoji seuls. |
+| OPEN-04 | Résolu : minimum 20, aucun minimum de jours, volume puis identifiant pour les égalités, au plus trois médailles, pas de score pour zéro message. |
+| OPEN-05 | Résolu : 9 h selon le compte de l’installateur, repli Montréal, français, commande /modulo et mois courant ou choisi. |
+| OPEN-06 | Résolu : 10 messages de contexte, textes 30 jours, statistiques pendant la POC. |
+| OPEN-07 | Base validée : local, SQLite, Socket Mode, OpenAI configurable. Budget maximum et hébergement permanent non définis. |
+| OPEN-08 | Cœur/orange et fiches bilingues validés. Fiches déployées sur https://modulo.contre-vent.ca à la suite de la préférence Vercel du propriétaire. Convention initiale pour les messages mixtes : langue dominante, français en cas d’égalité. |
+| OPEN-09 | Slack Connect exclu. Les canaux archivés, devenus privés ou inaccessibles sont suspendus. Un compte de l’espace (y compris un invité local) peut demander un rapport depuis un canal public suivi ; un participant externe n’y accède pas. |
+| OPEN-10 | Évaluation initiale sur exemples fictifs ; objectifs de précision et délai à mesurer sur le pilote, sans garantie chiffrée annoncée. |
+| OPEN-11 | File locale persistante, reprise des événements reçus et tentatives limitées. Pas de récupération des messages manqués pendant un arrêt. Un envoi Slack ambigu est marqué incertain et n’est pas republié aveuglément. |
 
 ## 9. Validation future
 

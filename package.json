@@ -1,0 +1,35 @@
+{
+  "name": "modulo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent Slack éducatif et statistiques de communication FR/EN",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "check": "npm run typecheck && npm test",
+    "evaluate": "tsx scripts/evaluate.ts",
+    "education": "tsx scripts/education.ts",
+    "build:education": "tsx scripts/build-education.ts",
+    "status": "tsx scripts/status.ts"
+  },
+  "dependencies": {
+    "@slack/bolt": "^5.1.0",
+    "dotenv": "^17.4.2",
+    "luxon": "^3.7.2",
+    "openai": "^7.15.0",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@slack/cli-hooks": "^2.0.0",
+    "@types/luxon": "^3.7.5",
+    "@types/node": "^22.20.2",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}

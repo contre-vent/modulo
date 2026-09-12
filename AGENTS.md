@@ -14,7 +14,8 @@
 - Sensibilisation automatique en français et en anglais, sans validation humaine, retrait ou modification du message d’un utilisateur.
 - Pas de signalement manuel, contestation, demande de révision ou workflow RH.
 - Statistiques individuelles et collectives publiques au sein de la communauté Slack authentifiée, y compris les statistiques négatives.
-- Les messages neutres entrent dans le dénominateur du score. Ne pas inventer les règles encore ouvertes concernant les cas mixtes, indéterminés ou non analysés.
+- Les messages neutres entrent dans le dénominateur du score ; mixte = négatif, indéterminés et échecs hors du score. Conserver le résultat initial après modification ou suppression par l’auteur.
+- Médailles dès 20 messages analysés ; rapports à 9 h selon le fuseau Slack de l’installateur, repli Montréal.
 - Ambiguous.ai est exclu pour l’instant. Ne pas ajouter de portail web ou AG-UI/CopilotKit à la POC sans nouveau besoin validé.
 
 ## Implémentation et vérification
@@ -25,7 +26,7 @@
 - Calculer les statistiques en code déterministe ; ne pas déléguer les calculs au modèle.
 - Éviter les doubles traitements et les boucles sur les propres messages du bot.
 - Associer les tests pertinents aux identifiants de requis. Séparer tests déterministes et évaluations de classification bilingues.
-- Quand des fichiers TypeScript changent, exécuter la vérification TypeScript et les tests pertinents. Documenter les commandes réelles dans le README une fois l’outillage installé ; ne pas inventer de commandes déjà disponibles.
+- Quand des fichiers TypeScript changent, exécuter `npm run check` (TypeScript et tests). `npm run evaluate` appelle réellement OpenAI avec des exemples fictifs et consomme des crédits API ; ne pas le confondre avec les tests isolés.
 - Pour une modification documentaire seule, vérifier cohérence, liens locaux et diff ; aucun test applicatif n’est nécessaire.
 - Garder les modifications ciblées, préserver les changements sans rapport et utiliser des Conventional Commits lorsqu’un commit est demandé. Mettre à jour CHANGELOG.md si pertinent.
 
