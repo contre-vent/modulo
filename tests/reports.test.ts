@@ -19,6 +19,32 @@ test('REPORT-05: four scopes and validation of mentions/months', () => {
   assert.throws(() => parseReportCommand('canal <#D123>'));
   assert.throws(() => parseReportCommand('canaux 2026-13'));
 });
+test('REPORT-05: short commands support all or one target, with optional months', () => {
+  assert.deepEqual(parseReportCommand(''), { scope: { kind: 'channels' } });
+  for (const [command, plural, single, mention, id] of [
+    ['u', 'users', 'user', '<@U123>', 'U123'],
+    ['c', 'channels', 'channel', '<#C123|general>', 'C123'],
+  ] as const) {
+    assert.deepEqual(parseReportCommand(command), { scope: { kind: plural }, month: undefined });
+    assert.deepEqual(parseReportCommand(`${command} 2026-09`), { scope: { kind: plural }, month: '2026-09' });
+    assert.deepEqual(parseReportCommand(`${command} ${mention}`), { scope: { kind: single, id }, month: undefined });
+    assert.deepEqual(parseReportCommand(`  ${command}  ${mention}  2026-09  `), { scope: { kind: single, id }, month: '2026-09' });
+    assert.deepEqual(parseReportCommand(`${command} ${id}`), { scope: { kind: single, id }, month: undefined });
+  }
+  for (const invalid of ['u <#C123>', 'c <@U123>', 'u @alex', 'c #general', 'u <@U123', 'c C123>',
+    'u 2026-13', 'c 2026-00', 'u <@U123> 2026-13', 'u <@U123> extra', 'c <#C123> 2026-09 extra']) {
+    assert.throws(() => parseReportCommand(invalid), /Usage:/, invalid);
+  }
+});
+test('REPORT-06: reports default to English, including empty states and score explanations', () => {
+  const period = monthPeriod('2026-09', 'UTC');
+  const text = reportPages([row('U123', 3, 1, 6)], { kind: 'users' }, period, '').join('');
+  assert.match(text, /Modulo · Users/);
+  assert.match(text, /10 analyzed · \+30\.0% \/ −10\.0% · 6 neutral/);
+  assert.match(text, /0 indeterminate \/ 0 pending \/ 0 failed/);
+  assert.match(text, /including neutral messages in the denominator/);
+  assert.match(reportPages([], { kind: 'channels' }, period, '').join(''), /No messages observed for this scope/);
+});
 test('REPORT-03/04: 20-message threshold, volume then stable ID for ties', () => {
   const rows = [row('U3', 1), row('U2', 20), row('U1', 20), row('U4', 30)];
   assert.deepEqual(rankStatistics(rows).map(r => r.id), ['U4', 'U1', 'U2', 'U3']);

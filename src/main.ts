@@ -27,10 +27,10 @@ async function main() {
     await ack();
     try {
       await engine.requestReport(command.team_id, command.user_id, command.channel_id, command.text, command.trigger_id);
-      await respond({ text: 'Le rapport sera publié dans ce canal.', response_type: 'ephemeral' });
+      await respond({ text: 'The report will be posted in this channel.', response_type: 'ephemeral' });
     } catch (e) {
       // Only expose our own user-facing validation errors, never upstream API errors.
-      const message = e instanceof Error && !('code' in e) && !('data' in e) ? e.message : 'Impossible de produire ce rapport pour le moment.';
+      const message = e instanceof Error && !('code' in e) && !('data' in e) ? e.message : 'Unable to generate this report right now.';
       await respond({ text: message, response_type: 'ephemeral' });
     }
   });

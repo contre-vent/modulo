@@ -84,8 +84,35 @@ test('REPORT-01/02: Slack account timezone, monthly report includes both populat
     assert.equal(await engine.scheduleMonthly(now), true); assert.equal(await engine.scheduleMonthly(now), false);
     await engine.tick(); await engine.tick();
     assert.equal(slack.posts.length, 2);
-    assert.ok(slack.posts.some(p => p.text?.includes('Utilisateurs')));
-    assert.ok(slack.posts.some(p => p.text?.includes('Canaux')));
+    assert.ok(slack.posts.some(p => p.text?.includes('Modulo · Users')));
+    assert.ok(slack.posts.some(p => p.text?.includes('Modulo · Channels')));
+    assert.ok(slack.posts.every(p => p.text?.includes('Observing since') && p.text.includes('timezone Europe/Paris')));
+  } finally { store.close(); }
+});
+test('REPORT-05/06: short commands deliver English reports for all four scopes', async () => {
+  const { store, slack, engine } = setup();
+  try {
+    slack.channels.push({ id: 'C456', name: 'other', is_member: true });
+    store.upsertChannel('C456', 'other', true, 1789230000 * 1000);
+    engine.ingest('T123', event);
+    engine.ingest('T123', { ...event, channel: 'C456', user: 'U456' });
+    await engine.tick(); await engine.tick();
+    for (const [command, included, excluded] of [
+      ['u', ['<@U123>', '<@U456>'], []],
+      ['u <@U123>', ['<@U123>'], ['<@U456>']],
+      ['c', ['<#C123>', '<#C456>'], []],
+      ['c <#C456>', ['<#C456>'], ['<#C123>']],
+    ] as const) {
+      await engine.requestReport('T123', 'U123', 'C123', `${command} 2026-09`);
+      await engine.tick();
+      const text = slack.posts.at(-1)?.text ?? '';
+      for (const target of included) assert.ok(text.includes(target), command);
+      for (const target of excluded) assert.ok(!text.includes(target), command);
+      assert.match(text, /Observing since/);
+      assert.match(text, /analyzed/);
+    }
+    await assert.rejects(engine.requestReport('T123', 'U123', 'C123', 'u @alex'), /Select a Slack user or channel mention/);
+    await assert.rejects(engine.requestReport('T123', 'U123', 'D123', 'c'), /Use \/modulo in a monitored public channel/);
   } finally { store.close(); }
 });
 test('TECH-06: ambiguous post failure is recorded and not duplicated', async () => {

@@ -21,11 +21,11 @@ Slack CLI vérifié : v4.7.0 ; espace connecté `contrevent-groupe` (`T0APQ2W08C
 - [x] Manifeste validé par Slack ; application **Modulo (local)** installée, ID `A0C1JBDNW3E`.
 - [x] Fiches statiques publiées sur [modulo.contre-vent.ca](https://modulo.contre-vent.ca), production Vercel, statut READY.
 - [x] Projet Vercel renommé `modulo`, CNAME Cloudflare créé pour le sous-domaine, domaine et HTTPS vérifiés.
-- [ ] Démarrage du bot et vérification des canaux effectivement suivis.
+- [x] Démarrage du bot et vérification des canaux effectivement suivis le 2026-09-12, après autorisation explicite du propriétaire.
 
 ## Éléments vérifiés
 
-- `npm run check` : 23 tests passent et TypeScript ne signale aucune erreur.
+- `npm run check` : 26 tests passent et TypeScript ne signale aucune erreur, dont les quatre périmètres des commandes courtes et les rapports en anglais.
 - `npm run evaluate` : 18/18 exemples fictifs réussis avec GPT-6 Astra low, version de prompt `modulo-poc-1`. Il s’agit d’un petit jeu de cadrage, pas d’une estimation de précision en conditions réelles.
 - HTTP anonyme sur l’accueil et des fiches FR/EN Vercel : 200 ; chemins `/.env` et `/reports` : 404.
 - Déploiement Vercel : `dpl_8itHvdzgBMEk5CPvkZFfurxqmvcX`, pages HTML statiques sans fonctions ni données Slack.
@@ -33,6 +33,8 @@ Slack CLI vérifié : v4.7.0 ; espace connecté `contrevent-groupe` (`T0APQ2W08C
 
 ## Activation
 
-Le premier démarrage a été refusé par la revue automatique d’autorisation : elle demande une autorisation explicite de transférer les nouveaux messages publics Slack et leur contexte à OpenAI, puis de publier les interventions automatiques. La question a été transmise au propriétaire. Le bot n’a pas encore observé de messages de l’espace.
+Le propriétaire a explicitement autorisé le 2026-09-12 le transfert des nouveaux messages publics internes et d’au plus 10 messages de contexte à OpenAI, puis la publication des réactions et explications automatiques. Cette autorisation a permis le démarrage après le refus initial de la revue automatique.
+
+Le démarrage a confirmé la connexion à `T0APQ2W08CX`, le suivi de 6 canaux publics internes et le fuseau Slack `America/New_York`. Le point de santé local répond `ok`. Au contrôle initial, aucun message n’avait encore été reçu et aucun envoi n’était en erreur. La vérification d’une classification et de sa réaction sur un message réel reste à effectuer dans Slack.
 
 Vercel héberge uniquement les fiches génériques. Le processus Slack et la base SQLite restent locaux, comme confirmé pour la POC. Une future exécution permanente nécessitera un hôte adapté ou une évolution de l’architecture.

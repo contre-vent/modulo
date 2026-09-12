@@ -125,7 +125,7 @@ export class Engine {
     const channels = this.store.channels();
     const starts = channels.filter(c => c.eligible).map(c => Number(c.activated_at));
     const start = starts.length ? new Date(Math.min(...starts) * 1000).toISOString().slice(0, 10) : '—';
-    return `Observation depuis le ${start} (activation propre à chaque canal) · ${starts.length} canaux suivis · ${channels.filter(c => !c.eligible).length} suspendus · fuseau ${this.timezone}.`;
+    return `Observing since ${start} (each channel has its own activation date) · ${starts.length} channels monitored · ${channels.filter(c => !c.eligible).length} suspended · timezone ${this.timezone}.`;
   }
   reportDeliveries(scope: ReportScope, period: Period, destination: string, key: string) {
     return reportPages(this.store.statistics(scope, period), scope, period, this.coverage()).map((text, i): Delivery => ({
@@ -135,20 +135,20 @@ export class Engine {
     }));
   }
   async requestReport(teamId: string, userId: string, destination: string, text: string, requestId: string = randomUUID()) {
-    if (teamId !== this.options.teamId) throw new Error('Espace Slack non autorisé.');
+    if (teamId !== this.options.teamId) throw new Error('Unauthorized Slack workspace.');
     const user = await this.slack.user(userId);
-    if (user.teamId !== teamId || user.bot || user.deleted || user.stranger) throw new Error('Membre Slack non autorisé.');
+    if (user.teamId !== teamId || user.bot || user.deleted || user.stranger) throw new Error('Unauthorized Slack member.');
     // Reports are public in a monitored public channel; DMs/private channels are not destinations.
-    if (!this.store.channel(destination)?.eligible || !await this.accessible(destination)) throw new Error('Utiliser /modulo dans un canal public suivi.');
+    if (!this.store.channel(destination)?.eligible || !await this.accessible(destination)) throw new Error('Use /modulo in a monitored public channel.');
     const { scope, month } = parseReportCommand(text);
     const period = monthPeriod(month, this.timezone);
-    if (period.from > Date.now() / 1000) throw new Error('Choisir le mois courant ou un mois passé.');
+    if (period.from > Date.now() / 1000) throw new Error('Choose the current month or a past month.');
     // Recheck directory before a report to exclude channels whose visibility changed.
     await this.syncChannels();
-    if (scope.kind === 'channel' && !this.store.channel(scope.id)?.eligible) throw new Error('Ce canal n’est pas suivi.');
+    if (scope.kind === 'channel' && !this.store.channel(scope.id)?.eligible) throw new Error('This channel is not monitored.');
     if (scope.kind === 'user') {
       const target = await this.slack.user(scope.id);
-      if (target.teamId !== teamId || target.bot || target.stranger) throw new Error('Cet utilisateur ne fait pas partie du périmètre.');
+      if (target.teamId !== teamId || target.bot || target.stranger) throw new Error('This user is outside the monitored workspace scope.');
     }
     const key = `requested:${stableUUID(requestId)}`;
     for (const delivery of this.reportDeliveries(scope, period, destination, key)) this.store.enqueue(delivery);

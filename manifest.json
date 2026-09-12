@@ -6,7 +6,7 @@
   },
   "features": {
     "bot_user": { "display_name": "Modulo", "always_online": false },
-    "slash_commands": [{ "command": "/modulo", "description": "Statistiques publiques des messages observés", "usage_hint": "canaux | canal #canal | utilisateurs | utilisateur @personne [AAAA-MM]", "should_escape": true }]
+    "slash_commands": [{ "command": "/modulo", "description": "Public statistics for observed messages", "usage_hint": "u [@user] [YYYY-MM] | c [#channel] [YYYY-MM]", "should_escape": true }]
   },
   "oauth_config": {
     "scopes": { "bot": ["channels:history", "channels:read", "channels:join", "chat:write", "reactions:write", "users:read", "commands"] }

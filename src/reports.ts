@@ -10,7 +10,7 @@ export function monthPeriod(key: string | undefined, zone: string, now = Date.no
   zone = validZone(zone);
   const date = key ? (/^20\d{2}-(0[1-9]|1[0-2])$/.test(key) ? DateTime.fromISO(`${key}-01`, { zone }) : null)
     : DateTime.fromMillis(now, { zone });
-  if (!date?.isValid) throw new Error('Mois invalide : utiliser AAAA-MM.');
+  if (!date?.isValid) throw new Error('Invalid month: use YYYY-MM.');
   const start = date.startOf('month');
   return { key: start.toFormat('yyyy-MM'), from: start.toMillis() / 1000,
     to: start.plus({ months: 1 }).toMillis() / 1000, zone };
@@ -23,20 +23,25 @@ export function dueMonthlyPeriod(zone: string, now = Date.now()): Period | null 
 }
 
 export type ReportScope = { kind: 'channels' | 'users' } | { kind: 'channel' | 'user'; id: string };
-export const commandHelp = 'Usage : /modulo canaux [AAAA-MM] · /modulo canal #canal [AAAA-MM] · /modulo utilisateurs [AAAA-MM] · /modulo utilisateur @personne [AAAA-MM]';
+export const commandHelp = 'Usage: /modulo u [@user] [YYYY-MM] · /modulo c [#channel] [YYYY-MM]. Omit the target to show all users or channels.';
 export function parseReportCommand(text: string): { scope: ReportScope; month?: string } {
   const args = text.trim().split(/\s+/).filter(Boolean);
   if (args.length === 0) return { scope: { kind: 'channels' } };
-  const aliases: Record<string, ReportScope['kind']> = { canaux: 'channels', channels: 'channels', utilisateurs: 'users', users: 'users', canal: 'channel', channel: 'channel', utilisateur: 'user', user: 'user' };
-  const kind = aliases[args[0]!];
+  const aliases: Record<string, ReportScope['kind']> = { c: 'channels', u: 'users', canaux: 'channels', channels: 'channels', utilisateurs: 'users', users: 'users', canal: 'channel', channel: 'channel', utilisateur: 'user', user: 'user' };
+  let kind = aliases[args[0]!];
   if (!kind) throw new Error(commandHelp);
+  // Short commands select one entity only when the next argument is not a month.
+  if ((args[0] === 'u' || args[0] === 'c') && args[1] && !/^\d{4}-\d{2}$/.test(args[1])) {
+    kind = args[0] === 'u' ? 'user' : 'channel';
+  }
   const single = kind === 'channel' || kind === 'user';
   let scope: ReportScope;
-  if (single) {
+  if (kind === 'channel' || kind === 'user') {
     const raw = args[1] ?? '';
-    const match = kind === 'channel' ? /^(?:<#)?(C[A-Z0-9]+)(?:\|[^>]+)?[>]?$/ : /^(?:<@)?([UW][A-Z0-9]+)(?:\|[^>]+)?[>]?$/;
-    const id = match.exec(raw)?.[1];
-    if (!id) throw new Error('Sélectionner une mention Slack de canal ou de personne. ' + commandHelp);
+    const match = kind === 'channel' ? /^(?:<#(C[A-Z0-9]+)(?:\|[^>]+)?>|(C[A-Z0-9]+))$/ : /^(?:<@([UW][A-Z0-9]+)(?:\|[^>]+)?>|([UW][A-Z0-9]+))$/;
+    const target = match.exec(raw);
+    const id = target?.[1] ?? target?.[2];
+    if (!id) throw new Error('Select a Slack user or channel mention from the suggestions. ' + commandHelp);
     scope = { kind, id };
   } else scope = { kind };
   const monthIndex = single ? 2 : 1;
@@ -69,9 +74,9 @@ export function reportPages(rows: Statistic[], scope: ReportScope, period: Perio
     const medal = scope.kind === 'user' || scope.kind === 'channel' ? '' : (['🥇 ', '🥈 ', '🥉 '][index] ?? '');
     const target = user ? `<@${row.id}>` : `<#${row.id}>`;
     const score = row.score === null ? '—' : row.score.toFixed(1);
-    return `${medal}${target} · ${row.total} analysés · +${row.positivePercent?.toFixed(1) ?? '—'} % / −${row.negativePercent?.toFixed(1) ?? '—'} % · ${row.neutral} neutres · *${score} pts* · ${row.indeterminate} indéterminés / ${row.pending} en attente / ${row.failed} échecs`;
+    return `${medal}${target} · ${row.total} analyzed · +${row.positivePercent?.toFixed(1) ?? '—'}% / −${row.negativePercent?.toFixed(1) ?? '—'}% · ${row.neutral} neutral · *${score} pts* · ${row.indeterminate} indeterminate / ${row.pending} pending / ${row.failed} failed`;
   });
-  if (!lines.length) lines.push('Aucun message observé pour ce périmètre.');
+  if (!lines.length) lines.push('No messages observed for this scope.');
   const pages: string[] = [];
   let page = '';
   for (const line of lines) {
@@ -79,5 +84,5 @@ export function reportPages(rows: Statistic[], scope: ReportScope, period: Perio
     page += line + '\n';
   }
   if (page) pages.push(page);
-  return pages.map((body, index) => `*Modulo · ${user ? 'Utilisateurs' : 'Canaux'} · ${period.key}* (${index + 1}/${pages.length})\n${coverage}\n${body}\nScore = % positifs − % négatifs, neutres inclus. Indéterminés et échecs exclus. Médailles : au moins 20 messages analysés. Ces résultats concernent les messages observés.`);
+  return pages.map((body, index) => `*Modulo · ${user ? 'Users' : 'Channels'} · ${period.key}* (${index + 1}/${pages.length})\n${coverage}\n${body}\nScore = positive % − negative %, including neutral messages in the denominator. Indeterminate, pending and failed analyses are excluded. Medals require at least 20 analyzed messages. These results describe observed messages.`);
 }
