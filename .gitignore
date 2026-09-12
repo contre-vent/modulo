@@ -34,3 +34,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Modulo runtime and local credentials
+/dist/
+/data/
+.env.*
+!.env.example
+/.slack/
+/eval-results/
