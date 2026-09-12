@@ -1,40 +1,41 @@
-# Plan d’implémentation de la POC
+# POC implementation plan
 
-Date : 2026-09-12. Source fonctionnelle : [requis](requirements.md).
+Date: 2026-09-12. Functional source: [requirements](requirements.md).
 
-1. **Fondations** : TypeScript, taxonomie, calcul déterministe, persistance et tests isolés.
-2. **Slack et analyse** : configuration de l’application, canaux publics, événements durables, classification structurée FR/EN, réactions et explications.
-3. **Rapports et éducation** : commandes, périodes mensuelles, classement, fiches bilingues et ordonnanceur.
-4. **Vérification et mise en route** : tests fonctionnels avec Slack simulé, évaluations IA, configuration réelle et documentation d’exploitation.
+1. **Foundations**: TypeScript, taxonomy, deterministic calculations, persistence, and isolated tests.
+2. **Slack and analysis**: app configuration, public channels, durable events, structured French/English classification, reactions, and explanations.
+3. **Reports and education**: commands, monthly periods, rankings, bilingual educational pages, and scheduler.
+4. **Verification and startup**: functional tests with simulated Slack, AI evaluations, live configuration, and operational documentation.
 
-Les comportements encore ouverts dans les requis doivent être confirmés avant leur implémentation. Les fondations indépendantes peuvent avancer pendant ces clarifications.
+Open behavior in the requirements must be confirmed before implementation. Independent foundational work can proceed while these points are clarified.
 
-Slack CLI vérifié : v4.7.0 ; espace connecté `contrevent-groupe` (`T0APQ2W08CX`). L’installation locale est effectuée ; l’activation est suivie ci-dessous.
+Slack CLI verified: v4.7.0; connected workspace `contrevent-groupe` (`T0APQ2W08CX`). Local installation is complete; activation is tracked below.
 
-## Réalisation
+## Completed work
 
-- [x] TypeScript, taxonomie, score et SQLite avec tests de persistance.
-- [x] Adaptateur Slack Bolt/Socket Mode, découverte des canaux publics internes et file de traitement.
-- [x] Classification OpenAI structurée, réactions et explications bilingues.
-- [x] Quatre périmètres de rapports, fuseau du compte Slack et médailles dès 20 messages.
-- [x] Tests d’intégration avec Slack simulé, sans publication de messages de test dans la compagnie.
-- [x] Manifeste validé par Slack ; application **Modulo (local)** installée, ID `A0C1JBDNW3E`.
-- [x] Fiches statiques publiées sur [modulo.contre-vent.ca](https://modulo.contre-vent.ca), production Vercel, statut READY.
-- [x] Projet Vercel renommé `modulo`, CNAME Cloudflare créé pour le sous-domaine, domaine et HTTPS vérifiés.
-- [x] Démarrage du bot et vérification des canaux effectivement suivis le 2026-09-12, après autorisation explicite du propriétaire.
+- [x] TypeScript, taxonomy, scoring, and SQLite with persistence tests.
+- [x] Slack Bolt/Socket Mode adapter, internal public channel discovery, and processing queue.
+- [x] Structured OpenAI classification, reactions, and bilingual explanations.
+- [x] Four report scopes, Slack account timezone, and medals starting at 20 messages.
+- [x] Integration tests with simulated Slack, without posting test messages to the company workspace.
+- [x] Manifest validated by Slack; **Modulo (local)** app installed, ID `A0C1JBDNW3E`.
+- [x] Static pages published at [modulo.contre-vent.ca](https://modulo.contre-vent.ca), Vercel production, status READY.
+- [x] Vercel project renamed to `modulo`, Cloudflare CNAME created for the subdomain, domain and HTTPS verified.
+- [x] Bot started and monitored channels verified on 2026-09-12, after explicit authorization from the owner.
+- [x] Live Slack testing: reactions, educational thread replies, and an English user report observed during the owner's tests.
 
-## Éléments vérifiés
+## Verification results
 
-- `npm run check` : 26 tests passent et TypeScript ne signale aucune erreur, dont les quatre périmètres des commandes courtes et les rapports en anglais.
-- `npm run evaluate` : 18/18 exemples fictifs réussis avec GPT-6 Astra low, version de prompt `modulo-poc-1`. Il s’agit d’un petit jeu de cadrage, pas d’une estimation de précision en conditions réelles.
-- HTTP anonyme sur l’accueil et des fiches FR/EN Vercel : 200 ; chemins `/.env` et `/reports` : 404.
-- Déploiement Vercel : `dpl_8itHvdzgBMEk5CPvkZFfurxqmvcX`, pages HTML statiques sans fonctions ni données Slack.
-- La liaison Git automatiquement créée par Vercel a été retirée du projet de fiches. Le bot local ne sera pas déployé sur Vercel lors d’un push.
+- `npm run check`: 26 tests pass and TypeScript reports no errors, including all four short-command scopes and English reports.
+- `npm run evaluate`: 18/18 fictional examples passed with GPT-6 Astra low, prompt version `modulo-poc-1`. This is a small baseline set, not an estimate of real-world accuracy.
+- Anonymous HTTP requests to the Vercel homepage and French/English educational pages returned 200; `/.env` and `/reports` returned 404.
+- Vercel deployment: `dpl_8itHvdzgBMEk5CPvkZFfurxqmvcX`, static HTML pages without functions or Slack data.
+- The Git integration automatically created by Vercel was removed from the educational site project. Pushing code will not deploy the local bot to Vercel.
 
 ## Activation
 
-Le propriétaire a explicitement autorisé le 2026-09-12 le transfert des nouveaux messages publics internes et d’au plus 10 messages de contexte à OpenAI, puis la publication des réactions et explications automatiques. Cette autorisation a permis le démarrage après le refus initial de la revue automatique.
+On 2026-09-12, the owner explicitly authorized sending new internal public messages and up to 10 context messages to OpenAI, followed by automatic reactions and explanations in Slack. This authorization allowed startup after the initial automatic approval review rejection.
 
-Le démarrage a confirmé la connexion à `T0APQ2W08CX`, le suivi de 6 canaux publics internes et le fuseau Slack `America/New_York`. Le point de santé local répond `ok`. Au contrôle initial, aucun message n’avait encore été reçu et aucun envoi n’était en erreur. La vérification d’une classification et de sa réaction sur un message réel reste à effectuer dans Slack.
+Startup confirmed the connection to `T0APQ2W08CX`, monitoring of 6 internal public channels, and the Slack timezone `America/New_York`. The local health endpoint returned `ok`. At the initial check, no messages had been received and no deliveries had failed. Subsequent testing in Slack confirmed heart and orange-circle reactions, educational thread replies, and an English user statistics report. These observations verify the tested flows, not overall classification accuracy.
 
-Vercel héberge uniquement les fiches génériques. Le processus Slack et la base SQLite restent locaux, comme confirmé pour la POC. Une future exécution permanente nécessitera un hôte adapté ou une évolution de l’architecture.
+Vercel hosts only the generic educational pages. The Slack process and SQLite database remain local, as confirmed for the POC. Future permanent operation will require a suitable host or an architectural change.

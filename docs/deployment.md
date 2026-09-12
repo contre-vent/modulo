@@ -1,32 +1,32 @@
-# Déploiement des fiches Modulo
+# Deploying Modulo educational pages
 
-## Projet Vercel
+## Vercel project
 
-- Équipe : `contre-vent`.
-- Projet : `modulo` (créé initialement sous `modulo-education`, puis renommé à la demande du propriétaire).
-- ID stable : `prj_nx1ANHpXnL8FEiuzHLn8bTJJHXSi`.
-- Contenu : pages éducatives statiques, sans bot, base de données, clé API ni messages Slack.
-- Déploiement initial : `dpl_8itHvdzgBMEk5CPvkZFfurxqmvcX`.
-- Liaison Git automatique désactivée ; déploiement explicite avec `--prebuilt`.
+- Team: `contre-vent`.
+- Project: `modulo` (initially created as `modulo-education`, then renamed at the owner's request).
+- Stable ID: `prj_nx1ANHpXnL8FEiuzHLn8bTJJHXSi`.
+- Content: static educational pages, without the bot, database, API key, or Slack messages.
+- Initial deployment: `dpl_8itHvdzgBMEk5CPvkZFfurxqmvcX`.
+- Automatic Git integration disabled; explicit deployment using `--prebuilt`.
 
-## Domaine demandé
+## Requested domain
 
-`modulo.contre-vent.ca` est rattaché au projet `modulo`. Le CNAME a été créé dans Cloudflare ; Vercel confirme `configured-correctly` et `verified`. L’accueil et une fiche ont été vérifiés dans le navigateur sur HTTPS le 2026-09-12.
+`modulo.contre-vent.ca` is associated with the `modulo` project. The CNAME was created in Cloudflare; Vercel confirmed `configured-correctly` and `verified`. The homepage and an educational page were checked in the browser over HTTPS on 2026-09-12.
 
-Enregistrement recommandé par `vercel domains verify` le 2026-09-12 :
+Record recommended by `vercel domains verify` on 2026-09-12:
 
-| Champ Cloudflare | Valeur |
+| Cloudflare field | Value |
 | --- | --- |
 | Zone | contre-vent.ca |
 | Type | CNAME |
-| Nom | modulo |
-| Cible | be918b264554551b.vercel-dns-016.com |
-| Proxy | DNS only (désactivé) |
+| Name | modulo |
+| Target | be918b264554551b.vercel-dns-016.com |
+| Proxy | DNS only (disabled) |
 | TTL | Auto |
 
-Cette opération concerne uniquement `modulo`. Ne pas modifier les serveurs de noms, le domaine racine ou l’enregistrement de Verbatim.
+This operation applies only to `modulo`. Do not change the nameservers, root domain, or Verbatim record.
 
-## Publication et vérification
+## Publishing and verification
 
 ```sh
 npm run build:education
@@ -34,10 +34,10 @@ vercel deploy --prebuilt --prod --yes --scope contre-vent --cwd dist/education
 vercel domains verify modulo.contre-vent.ca --scope contre-vent --cwd dist/education
 ```
 
-Si le dossier généré doit être relié à nouveau :
+If the generated directory needs to be linked again:
 
 ```sh
 vercel link --yes --project modulo --scope contre-vent --cwd dist/education
 ```
 
-`EDUCATION_BASE_URL=https://modulo.contre-vent.ca` est configuré dans le fichier local `.env` et fourni dans `.env.example`. Ce réglage ne démarre pas le bot à lui seul.
+`EDUCATION_BASE_URL=https://modulo.contre-vent.ca` is configured in the local `.env` file and provided in `.env.example`. This setting alone does not start the bot.
