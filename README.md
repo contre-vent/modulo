@@ -1,95 +1,98 @@
 # modulo
 
-POC d’un agent Slack de sensibilisation aux communications respectueuses, avec réactions éducatives et statistiques publiques dans la communauté.
+A proof of concept for a Slack agent that encourages respectful communication through educational reactions and statistics shared publicly within the community.
 
 ## Documentation
 
-- [Requis de la POC](docs/requirements.md) : périmètre validé, comportements attendus, critères d’acceptation et décisions ouvertes.
-- [Instructions de développement](AGENTS.md) : consignes pour Codex et les autres agents de programmation.
+- [POC requirements](docs/requirements.md): confirmed scope, expected behavior, acceptance criteria, and open decisions.
+- [Development instructions](AGENTS.md): guidance for Codex and other coding agents.
 
-## Démarrage local
+## Local startup
 
-Prérequis : Node.js 24 ou supérieur, npm, Slack CLI connecté à l’espace et une clé API OpenAI. L’application locale Modulo est installée dans `contrevent-groupe` (`T0APQ2W08CX`, application `A0C1JBDNW3E`). Les identifiants locaux du CLI restent dans `.slack/`, ignoré par Git.
+Prerequisites: Node.js 24 or later, npm, Slack CLI connected to the workspace, and an OpenAI API key. The local Modulo app is installed in `contrevent-groupe` (`T0APQ2W08CX`, app `A0C1JBDNW3E`). Local CLI credentials remain in `.slack/`, which Git ignores.
 
 ```sh
 npm ci
 cp .env.example .env
 ```
 
-Ne pas recopier `.env.example` si `.env` existe déjà. Renseigner `OPENAI_API_KEY` sans la publier. Configurer `EDUCATION_BASE_URL` avec l’origine HTTPS qui expose le serveur de fiches (`127.0.0.1:3000`). Définir `MODULO_ENABLED=true` lorsque cette adresse est prête.
+Do not copy `.env.example` over an existing `.env`. Set `OPENAI_API_KEY` without publishing it. Set `EDUCATION_BASE_URL` to the HTTPS origin exposing the educational page server (`127.0.0.1:3000`). Set `MODULO_ENABLED=true` when that address is ready.
 
 ```sh
 slack manifest validate --team T0APQ2W08CX
 slack run --team T0APQ2W08CX
 ```
 
-Slack CLI fournit les jetons du bot et de Socket Mode au processus. Pour exécuter `npm start` directement, il faut renseigner `SLACK_BOT_TOKEN` et `SLACK_APP_TOKEN` soi-même. La connexion CLI seule n’ajoute pas ces jetons dans `.env`.
+Slack CLI supplies the bot and Socket Mode tokens to the process. To run `npm start` directly, set `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` yourself. Signing in through the CLI alone does not add these tokens to `.env`.
 
-Le démarrage vérifie l’espace du jeton, rejoint les canaux publics internes et enregistre leur date d’activation. Le bot réagit uniquement aux nouveaux messages humains textuels reçus après cette date. Les nouveaux canaux sont découverts par événements et vérification périodique. Les modifications/suppressions des messages sources ne changent pas les résultats initiaux.
+Startup verifies the token's workspace, joins internal public channels, and records their activation dates. The bot responds only to new human text messages received after that date. New channels are discovered through events and periodic checks. Editing or deleting source messages does not change the initial results.
 
-Le processus local doit rester lancé. `Ctrl+C` l’arrête. Un verrou empêche deux processus Modulo d’utiliser la même base simultanément. Le fichier `data/modulo.sqlite` doit être conservé entre les démarrages : le supprimer efface les statistiques et les bornes d’activation.
+The local process must remain running. `Ctrl+C` stops it. A lock prevents two Modulo processes from using the same database simultaneously. Keep `data/modulo.sqlite` between runs: deleting it erases statistics and activation boundaries.
 
-## Commandes dans Slack
+## Slack commands
 
-À utiliser dans un canal public suivi ; le résultat y sera public :
+Use these in a monitored public channel; the results will be public there:
 
 ```text
-/modulo canaux
-/modulo canal #general
-/modulo utilisateurs
-/modulo utilisateur @personne
-/modulo utilisateurs 2026-09
+/modulo c
+/modulo c #general
+/modulo u
+/modulo u @person
+/modulo u 2026-09
+/modulo c #general 2026-09
 ```
 
-Sélectionner les mentions Slack de canal/personne. Le mois courant est utilisé par défaut. Les rapports mensuels publient les statistiques de tous les canaux suivis et utilisateurs observés dans le canal général, avec trois médailles au maximum par classement. Il faut 20 messages analysés pour une médaille. Le fuseau est lu sur le compte de l’installateur (`SLACK_TIMEZONE_USER_ID`), avec repli sur Montréal ; `REPORT_TIMEZONE` permet une surcharge explicite.
+`u` without a target lists all observed users; `c` without a target lists all monitored channels. Select names from Slack's suggestions to target a person or channel. The current month is used by default. `/modulo` alone continues to list channels; older commands (`utilisateur`, `utilisateurs`, `canal`, `canaux`, and their English equivalents) remain compatible.
 
-## Vérification
+Reports and command feedback default to English; their language is not derived from a Slack setting. Educational explanations still follow the message's language. Monthly reports publish statistics for all monitored channels and observed users in the general channel, with up to three medals per ranking. A medal requires 20 analyzed messages. The timezone is read from the installer's account (`SLACK_TIMEZONE_USER_ID`), falling back to Montréal; `REPORT_TIMEZONE` provides an explicit override.
+
+## Verification
 
 ```sh
-npm run check       # TypeScript et tests sans Slack ni OpenAI réels
-npm run evaluate    # Évaluation réelle OpenAI, exemples fictifs, facturation API
-npm run status      # Diagnostic local sans texte des messages ni secrets
-npm run education   # Fiches seules, pour préparer l’adresse HTTPS avant le bot
+npm run check       # TypeScript and tests without real Slack or OpenAI calls
+npm run evaluate    # Real OpenAI evaluation, fictional examples, API charges apply
+npm run status      # Local diagnostics without message text or secrets
+npm run education   # Educational pages only, to prepare HTTPS before starting the bot
 ```
 
-`npm run education` et le bot utilisent le même port ; arrêter le premier avant de lancer le second. Le serveur HTTP ne propose que `/education/fr/<categorie>`, `/education/en/<categorie>` et `/health`. Il n’expose ni statistiques, ni clé, ni texte Slack. Il peut être publié derrière un proxy HTTPS ou un tunnel. Une URL de tunnel temporaire cesse de fonctionner lorsque ce tunnel s’arrête.
+`npm run education` and the bot use the same port; stop the former before starting the latter. The HTTP server provides only `/education/fr/<category>`, `/education/en/<category>`, and `/health`. It exposes no statistics, keys, or Slack text. It can be published behind an HTTPS proxy or tunnel. A temporary tunnel URL stops working when the tunnel stops.
 
-Le jeu d’évaluation est versionné dans `evals/cases.json`. Les résultats de la dernière exécution se trouvent dans `eval-results/latest.json` (ignoré par Git). Le modèle d’analyse est configurable ; GPT-6 Astra low est la base initiale, indépendamment du réglage de Codex.
+The evaluation set is versioned in `evals/cases.json`. Results from the latest run are stored in `eval-results/latest.json` (ignored by Git). The analysis model is configurable; GPT-6 Astra low is the initial baseline, independent of the Codex setting.
 
-## Fiches sur Vercel
+## Educational pages on Vercel
 
-Adresse stable : [modulo.contre-vent.ca](https://modulo.contre-vent.ca). Ce déploiement publie uniquement les fiches génériques ; le bot et SQLite restent locaux.
+Stable address: [modulo.contre-vent.ca](https://modulo.contre-vent.ca). This deployment publishes only generic educational pages; the bot and SQLite remain local.
 
-Pour mettre à jour les fiches :
+To update the pages:
 
 ```sh
 npm run build:education
-# Si le dossier généré n’est pas encore lié à ce projet :
+# If the generated directory is not already linked to this project:
 vercel link --yes --project modulo --scope contre-vent --cwd dist/education
 vercel deploy --prebuilt --prod --yes --scope contre-vent --cwd dist/education
 ```
 
-Le build produit uniquement des pages HTML et une configuration de routage dans `dist/education/.vercel/output`. Aucun secret ni fichier de base de données n’est inclus. La liaison Git automatique du projet de fiches est désactivée ; si le CLI la recrée lors d’un nouveau `link`, la déconnecter avec `vercel git disconnect --scope contre-vent --cwd dist/education`.
+The build produces only HTML pages and routing configuration in `dist/education/.vercel/output`. No secrets or database files are included. Automatic Git integration for the educational site is disabled; if the CLI recreates it during another `link`, disconnect it with `vercel git disconnect --scope contre-vent --cwd dist/education`.
 
-Le projet Vercel s’appelle désormais `modulo`. Le rattachement du domaine `modulo.contre-vent.ca` est suivi dans [la documentation de déploiement](docs/deployment.md).
+The Vercel project is now named `modulo`. The domain association for `modulo.contre-vent.ca` is tracked in the [deployment documentation](docs/deployment.md).
 
-## Fonctionnement et limites de la POC
+## POC behavior and limitations
 
-- SQLite conserve la file reçue, les classifications et les envois à effectuer. Les événements répétés ne sont pas recomptés.
-- Les textes reçus et reformulations sont purgés localement après 30 jours ; les catégories et statistiques restent. Cette purge ne supprime pas les messages publiés dans Slack et ne configure pas la rétention du fournisseur d’IA.
-- Le score inclut les neutres ; les indéterminés, échecs et traitements en attente apparaissent séparément. Les rapports mesurent les messages observés, pas la valeur des personnes.
-- Les canaux privés, Slack Connect, bots, messages système, fichiers et messages uniquement emoji sont exclus. Un canal devenu privé ou inaccessible est suspendu.
-- Les messages manqués lorsque le processus est arrêté ne sont pas récupérés. Au redémarrage, la file locale reprend ; aucun historique antérieur n’est importé. La couverture affichée indique les bornes d’observation, pas une garantie de réception exhaustive.
-- Les rapports mensuels deviennent exigibles le 1er à 9 h. En cas d’arrêt à cette heure, le mois précédent est publié au prochain passage de l’ordonnanceur dans le mois courant. Les mois plus anciens restent accessibles sur demande.
-- Les appels de classification et réactions sont retentés avec une limite. Si la réponse à un envoi Slack est perdue, sa livraison est marquée `uncertain` pour éviter une publication en double. Consulter `npm run status` ; une livraison incertaine peut nécessiter un diagnostic technique.
-- Le traitement est séquentiel pour cette POC. Un volume supérieur à la capacité d’analyse créera une attente ; aucun objectif de latence en production n’est annoncé.
+- SQLite stores the received message queue, classifications, and pending deliveries. Repeated events are not counted again.
+- Received text and suggested rephrasings are purged locally after 30 days; categories and statistics remain. This purge does not delete messages posted in Slack or configure the AI provider's retention policy.
+- The score includes neutral messages; indeterminate messages, failures, and pending analyses appear separately. Reports measure observed messages, not people's worth.
+- Private channels, Slack Connect, bots, system messages, files, and emoji-only messages are excluded. A channel that becomes private or inaccessible is suspended.
+- Messages missed while the process is stopped are not recovered. The local queue resumes on restart; no earlier history is imported. Displayed coverage indicates observation boundaries, not a guarantee that every message was received.
+- Monthly reports become due on the first at 9 a.m. If the process is stopped at that time, the previous month is published at the next scheduler pass within the current month. Older months remain available on demand.
+- Classification calls and reactions have limited retries. If the response to a Slack post is lost, its delivery is marked `uncertain` to prevent duplicate posts. Check `npm run status`; an uncertain delivery may require technical investigation.
+- Processing is sequential for this POC. Volumes above analysis capacity will create a backlog; no production latency target is specified.
 
-Voir [le suivi d’implémentation](docs/implementation-plan.md) pour les validations réalisées et les étapes de mise en route.
+See the [implementation tracker](docs/implementation-plan.md) for completed checks and startup steps.
 
-## Convention documentaire
+## Documentation convention
 
-Le projet utilise une spécification légère en Markdown, avec identifiants stables et critères vérifiables. Ce choix est une convention du projet, pas un format de requis imposé par Codex.
+The project uses a lightweight Markdown specification with stable identifiers and verifiable criteria. This is a project convention, not a requirements format imposed by Codex.
 
-`AGENTS.md` contient les instructions de travail et renvoie à la spécification. Il ne constitue pas le prompt du modérateur exécuté dans Slack. Les futurs prompts et jeux d’évaluation seront versionnés avec le code.
+`AGENTS.md` contains working instructions and references the specification. It is not the prompt for the moderator running in Slack. Future prompts and evaluation sets will be versioned with the code.
 
-Référence : [instructions AGENTS.md dans la documentation officielle OpenAI](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+Reference: [AGENTS.md instructions in the official OpenAI documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
