@@ -8,3 +8,5 @@
 - SQLite, persistent activation boundaries, a processing queue, duplicate prevention, and 30-day text retention.
 - Deterministic tests and an initial set of 18 fictional examples for evaluating classification.
 - Static educational pages deployed on Vercel at `https://modulo.contre-vent.ca`, with a subdomain configured through Cloudflare.
+- Serialized process-lock acquisition and stale-PID recovery with a separate SQLite lock to prevent simultaneous workers after a crash.
+- Clarified the public HTTPS education URL and the local HTTP development listener in the startup guide.

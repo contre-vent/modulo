@@ -16,7 +16,7 @@ npm ci
 cp .env.example .env
 ```
 
-Do not copy `.env.example` over an existing `.env`. Set `OPENAI_API_KEY` without publishing it. Set `EDUCATION_BASE_URL` to the HTTPS origin exposing the educational page server (`127.0.0.1:3000`). Set `MODULO_ENABLED=true` when that address is ready.
+Do not copy `.env.example` over an existing `.env`. Set `OPENAI_API_KEY` without publishing it. Keep `EDUCATION_BASE_URL=https://modulo.contre-vent.ca` to use the deployed educational pages. For another deployment, supply a publicly accessible HTTPS origin serving those pages. The local listener at `http://127.0.0.1:3000` is only an HTTP development server; it is not a valid `EDUCATION_BASE_URL` and requires an HTTPS tunnel or proxy if used for Slack links. Set `MODULO_ENABLED=true` when the public HTTPS address is ready.
 
 ```sh
 slack manifest validate --team T0APQ2W08CX
