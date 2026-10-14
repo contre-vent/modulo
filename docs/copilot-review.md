@@ -5,7 +5,7 @@ Source: [Copilot review on merged PR #1](https://github.com/contre-vent/modulo/p
 
 ## Applied
 
-- **Stale process-lock recovery race (TECH-01/06).** Multiple starters could read the same dead PID and unlink a replacement lock. Acquisition and recovery now run under an exclusive SQLite transaction in a separate `.lock.sqlite` file held for the worker's lifetime. The PID check remains compatible with an already running older worker. The guard file is retained; closing the connection or terminating the process releases its OS lock. The application's data database is unaffected. A repeated release cannot remove a later owner's PID file.
+- **Stale process-lock recovery race (TECH-01/06).** Multiple starters could read the same dead PID and unlink a replacement lock. Acquisition and recovery now run under an exclusive SQLite transaction in a separate `.lock.sqlite` file held for the worker's lifetime. This serializes workers using the current lock protocol, but does not synchronize stale-PID recovery in older PID-only workers; stop those workers completely before upgrading. The guard file is retained; closing the connection or terminating the process releases its OS lock. The application's data database is unaffected. A repeated release cannot remove a later owner's PID file.
 - **Education URL instructions.** The README now explicitly uses `https://modulo.contre-vent.ca`, distinguishes the local HTTP listener, and explains the HTTPS tunnel/proxy option. Configuration validation and deployed URLs are unchanged.
 
 ## Not applied

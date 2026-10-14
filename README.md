@@ -27,7 +27,7 @@ Slack CLI supplies the bot and Socket Mode tokens to the process. To run `npm st
 
 Startup verifies the token's workspace, joins internal public channels, and records their activation dates. The bot responds only to new human text messages received after that date. New channels are discovered through events and periodic checks. Editing or deleting source messages does not change the initial results.
 
-The local process must remain running. `Ctrl+C` stops it. A lock prevents two Modulo processes from using the same database simultaneously. Keep `data/modulo.sqlite` between runs: deleting it erases statistics and activation boundaries.
+The local process must remain running. `Ctrl+C` stops it. The lock prevents two processes using the current lock protocol from sharing a database. Before upgrading from an older PID-only version, stop that process completely; its stale-lock recovery does not use the current lock protocol. Keep `data/modulo.sqlite` between runs: deleting it erases statistics and activation boundaries.
 
 ## Slack commands
 
